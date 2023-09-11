@@ -58,5 +58,50 @@ namespace CodeChallenge.Controllers
 
             return Ok(newEmployee);
         }
+
+        [HttpGet("{id}/reportingstructure")]
+        public ActionResult<ReportingStructure> GetReportingStructure(string id)
+        {
+            // Retrieve the employee using the provided id
+            var employee = _employeeService.GetById(id);
+
+            // If no employee found, return a 404 Not Found response
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            // Create the reporting structure for the employee
+            var reportingStructure = new ReportingStructure
+            {
+                Employee = employee,
+                NumberOfReports = GetNumberOfReports(employee)
+            };
+
+            // Return the reporting structure in the response
+            return Ok(reportingStructure);
+        }
+
+        // Recursive function to calculate the total number of reports under a given employee
+        private int GetNumberOfReports(Employee employee)
+        {
+            // if no direct reports return 0
+            if (employee == null || employee.DirectReports == null || !employee.DirectReports.Any())
+            {
+                return 0;
+            }
+
+            // Count direct reports of the employee
+            int count = employee.DirectReports.Count;
+
+            foreach (var report in employee.DirectReports)
+            {
+                // Recursively calculate the reports for each direct report
+                var directReportEmployee = _employeeService.GetById(report.EmployeeId);
+                count += GetNumberOfReports(directReportEmployee);
+            }
+
+            return count;
+        }
     }
 }
