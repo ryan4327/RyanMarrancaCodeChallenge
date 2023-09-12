@@ -30,6 +30,16 @@ namespace CodeChallenge.Services
             return employee;
         }
 
+        public Employee CreateCompensation(Employee employee)
+        {
+            if (employee != null)
+            {
+                _employeeRepository.Update(employee);
+            }
+
+            return employee;
+        }
+
         public Employee GetById(string id)
         {
             if(!String.IsNullOrEmpty(id))
