@@ -15,14 +15,14 @@ namespace CodeChallenge.Controllers
     {
         private readonly ILogger _logger;
         private readonly IEmployeeService _employeeService;
-
+        
         public EmployeeController(ILogger<EmployeeController> logger, IEmployeeService employeeService)
         {
             _logger = logger;
             _employeeService = employeeService;
         }
 
-        [HttpPost]
+        [HttpPost]  
         public IActionResult CreateEmployee([FromBody] Employee employee)
         {
             _logger.LogDebug($"Received employee create request for '{employee.FirstName} {employee.LastName}'");
@@ -81,6 +81,61 @@ namespace CodeChallenge.Controllers
             // Return the reporting structure in the response
             return Ok(reportingStructure);
         }
+
+        [HttpPut("createcompensation")]
+        public ActionResult<Compensation> CreateCompensation([FromBody] Compensation compensation)
+        {
+
+            // Check if the compensation object from the request is null
+            if (compensation == null)
+            {
+                return BadRequest("The provided compensation data is null.");
+            }
+
+            var employee = _employeeService.GetById(compensation.EmployeeId);
+
+            // Check if the employee exists
+            if (employee == null)
+            {
+                return NotFound($"No employee found with the ID {compensation.EmployeeId}.");
+            }
+
+            employee.Compensation = new Compensation() 
+            { 
+                Salary = compensation.Salary,
+                EffectiveDate = compensation.EffectiveDate,
+                EmployeeId = employee.EmployeeId,
+            };
+
+            // Call the service to create the compensation record
+            var employeeCompensation = _employeeService.CreateCompensation(employee);
+
+            // If creation fails, return a 400 Bad Request response
+            if (employeeCompensation == null)
+            {
+                return BadRequest("Invalid data.");
+            }
+
+            // Return the created compensation record
+            return Ok(employeeCompensation.Compensation);
+        }
+
+        [HttpGet("{id}/getemployeecompensation")]
+        public ActionResult<Compensation> GetEmployeeCompensation(string id)
+        {
+            // Retrieve the employee using the provided id
+            var employee = _employeeService.GetById(id);
+
+            // If no employee found, return a 404 Not Found response
+            if (employee == null || employee.Compensation == null)
+            {
+                return NotFound();
+            }
+
+            // Return the compensation structure in the response
+            return Ok(employee.Compensation);
+        }
+
 
         // Recursive function to calculate the total number of reports under a given employee
         private int GetNumberOfReports(Employee employee)

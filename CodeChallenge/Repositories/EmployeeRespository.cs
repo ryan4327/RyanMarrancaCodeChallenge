@@ -27,10 +27,23 @@ namespace CodeChallenge.Repositories
             return employee;
         }
 
+        public Employee Update (Employee employee)
+        {
+            var employeeToUpdate = _employeeContext.Employees
+                    .FirstOrDefault(e => e.EmployeeId == employee.EmployeeId);
+
+            employeeToUpdate = employee;
+            _employeeContext.Update(employeeToUpdate);
+            _employeeContext.SaveChangesAsync();
+
+            return employeeToUpdate;
+        }
+
         public Employee GetById(string id)
         {
             return _employeeContext.Employees
                         .Include(e => e.DirectReports)
+                        .Include(e => e.Compensation)
                         .FirstOrDefault(e => e.EmployeeId == id);
         }
 

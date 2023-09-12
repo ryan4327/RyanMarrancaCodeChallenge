@@ -1,10 +1,9 @@
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-
 using CodeChallenge.Models;
-
 using CodeCodeChallenge.Tests.Integration.Extensions;
 using CodeCodeChallenge.Tests.Integration.Helpers;
 
@@ -152,6 +151,33 @@ namespace CodeCodeChallenge.Tests.Integration
             Assert.AreEqual(expectedFirstName, reportingStructure.Employee.FirstName);
             Assert.AreEqual(expectedLastName, reportingStructure.Employee.LastName);
             Assert.AreEqual(expectedNumberOfReports, reportingStructure.NumberOfReports);
+        }
+
+        [TestMethod]
+        public void CreateCompensation_Returns_OK()
+        {
+            // Arrange
+            var compensation = new Compensation()
+            {
+                EmployeeId = "03aa1462-ffa9-4978-901b-7c001562cf6f",
+                Salary = 75000,
+                EffectiveDate = DateTime.Now
+            };
+
+            var requestContent = new JsonSerialization().ToJson(compensation);
+
+            // Execute
+            var putRequestTask = _httpClient.PutAsync("api/employee/createcompensation",
+                new StringContent(requestContent, Encoding.UTF8, "application/json"));
+            var response = putRequestTask.Result;
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+
+            var newCompensation = response.DeserializeContent<Compensation>();
+            Assert.AreEqual(compensation.EmployeeId, newCompensation.EmployeeId);
+            Assert.AreEqual(compensation.Salary, newCompensation.Salary);
+            Assert.AreEqual(compensation.EffectiveDate.Date, newCompensation.EffectiveDate.Date);
         }
 
     }
